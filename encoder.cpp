@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -31,15 +32,32 @@ typedef struct WAV_HEADER {
 
 struct ByteStream {
     ByteStream(const char *filename) { fptr_ = fopen(filename, "r"); }
+
+    void push_front(uint32_t data) {
+        in_queue = sizeof(data);
+        saved_value = data;
+    }
+
     uint8_t extract_byte() {
         uint8_t ret = 0;
-        auto n_bytes = fread(&ret, sizeof(ret), 1, fptr_);
+        uint32_t n_bytes = 0;
+        if (in_queue) {
+            ret = saved_value & 0xFF;
+            saved_value >>= 8;
+            n_bytes = 1;
+            in_queue--;
+            std::cout << "stream return " << (int)ret << std::endl;
+        } else {
+            n_bytes = fread(&ret, sizeof(ret), 1, fptr_);
+        }
         return n_bytes == 0 ? 0 : ret;
     }
     ~ByteStream() { fclose(fptr_); }
 
   private:
     FILE *fptr_ = nullptr;
+    uint32_t saved_value = 0;
+    int in_queue = 0;
 };
 
 int main(int argc, char *argv[]) {
@@ -62,6 +80,10 @@ int main(int argc, char *argv[]) {
 
     constexpr uint32_t BUFFER_SIZE = sizeof(float) * 1024;
     int8_t *buffer = new int8_t[BUFFER_SIZE];
+
+    auto hidden_file_size = std::filesystem::file_size(data_filename);
+    stream.push_front(hidden_file_size);
+    std::cout << "Input file size = " << hidden_file_size << std::endl;
 
     uint32_t bytesRead = 0;
     while ((bytesRead = fread(buffer, sizeof(int8_t), BUFFER_SIZE, in_file)) > 0) {
@@ -88,7 +110,6 @@ int main(int argc, char *argv[]) {
                 holder.raw.mantissa |= value & 0xFF;
                 data[i] = holder.f;
             }
-            std::cout << "Writed " << bytesRead << "bytes\n";
         }
 
         fwrite(buffer, sizeof(buffer[0]), bytesRead, out_file);

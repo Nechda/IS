@@ -5,12 +5,12 @@ set(COMPILE_SETTINGS -O2 -DNDEBUG)
 
 set(BINARY "encoder")
 add_executable(${BINARY} encoder.cpp)
-target_compile_features(${BINARY} PRIVATE cxx_std_14)
+target_compile_features(${BINARY} PRIVATE cxx_std_17)
 target_compile_options(${BINARY} PRIVATE ${COMPILE_SETTINGS})
 
 set(BINARY "decoder")
 add_executable(${BINARY} decoder.cpp)
-target_compile_features(${BINARY} PRIVATE cxx_std_14)
+target_compile_features(${BINARY} PRIVATE cxx_std_17)
 target_compile_options(${BINARY} PRIVATE ${COMPILE_SETTINGS})
 
 find_program(CLANG_FORMAT "clang-format")

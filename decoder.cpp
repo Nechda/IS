@@ -60,6 +60,8 @@ int main(int argc, char *argv[]) {
     constexpr uint32_t BUFFER_SIZE = sizeof(float) * 1024;
     int8_t *buffer = new int8_t[BUFFER_SIZE];
 
+    uint32_t total_bytes = 0;
+    uint32_t out_file_size = ~0U;
     uint32_t bytesRead = 0;
     while ((bytesRead = fread(buffer, sizeof(int8_t), BUFFER_SIZE, in_file)) > 0) {
         if (wavHeader.bitsPerSample == 32) {
@@ -78,11 +80,30 @@ int main(int argc, char *argv[]) {
                 } raw;
             } holder;
 
-            for (int i = 0; i < count; i++) {
+            int start_pos = out_file_size == (~0U) ? sizeof(uint32_t) : 0U;
+            if (out_file_size == (~0U)) {
+
+                out_file_size = 0;
+                for (int i = 0; i < sizeof(uint32_t); i++) {
+                    holder.f = data[i];
+                    uint32_t value = holder.raw.mantissa & 0xFF;
+                    value <<= (8 * i);
+                    out_file_size |= value;
+                }
+                std::cout << "Out file size = " << out_file_size << std::endl;
+            }
+
+            for (int i = start_pos; i < count; i++) {
                 holder.f = data[i];
                 uint8_t value = holder.raw.mantissa & 0xFF;
-                fwrite(&value, sizeof(value), 1, out_file);
+                total_bytes++;
+                if (total_bytes <= out_file_size) {
+                    fwrite(&value, sizeof(value), 1, out_file);
+                }
             }
+
+            if (total_bytes > out_file_size)
+                break;
         }
     }
     delete[] buffer;
