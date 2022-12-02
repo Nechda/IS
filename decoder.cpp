@@ -1,14 +1,8 @@
-#include <chrono>
-#include <complex>
-#include <iomanip>
-#include <iostream>
-#include <random>
-#include <vector>
-
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <string>
+#include <vector>
 
 typedef struct WAV_HEADER {
     /* RIFF Chunk Descriptor */
@@ -90,7 +84,6 @@ int main(int argc, char *argv[]) {
                     value <<= (8 * i);
                     out_file_size |= value;
                 }
-                std::cout << "Out file size = " << out_file_size << std::endl;
             }
 
             for (int i = start_pos; i < count; i++) {

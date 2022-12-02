@@ -1,15 +1,8 @@
-#include <chrono>
-#include <complex>
-#include <iomanip>
-#include <iostream>
-#include <random>
-#include <vector>
-
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <string>
+#include <vector>
 
 typedef struct WAV_HEADER {
     /* RIFF Chunk Descriptor */
@@ -46,7 +39,6 @@ struct ByteStream {
             saved_value >>= 8;
             n_bytes = 1;
             in_queue--;
-            std::cout << "stream return " << (int)ret << std::endl;
         } else {
             n_bytes = fread(&ret, sizeof(ret), 1, fptr_);
         }
@@ -83,7 +75,6 @@ int main(int argc, char *argv[]) {
 
     auto hidden_file_size = std::filesystem::file_size(data_filename);
     stream.push_front(hidden_file_size);
-    std::cout << "Input file size = " << hidden_file_size << std::endl;
 
     uint32_t bytesRead = 0;
     while ((bytesRead = fread(buffer, sizeof(int8_t), BUFFER_SIZE, in_file)) > 0) {
